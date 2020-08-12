@@ -1,5 +1,7 @@
+import pandas as pd
+
 # load all data
-dataset = read_csv('swedenLoadData.csv', low_memory=False, infer_datetime_format=True, parse_dates={'datetime':[0,1]}, index_col=['datetime'])
+dataset = pd.read_csv('swedenLoadData.csv', low_memory=False, infer_datetime_format=True, parse_dates={'datetime':[0,1]}, index_col=['datetime'])
 
 # mark all missing values
 dataset.replace('?', nan, inplace=True)
@@ -51,3 +53,12 @@ values = dataset.values
 dataset['sub_metering_4'] = (values[:,0] * 1000 / 60) - (values[:,4] + values[:,5] + values[:,6])
 # save updated dataset
 dataset.to_csv('household_power_consumption.csv')
+
+# split a univariate dataset into train/test sets
+def split_dataset(data):
+	# split into standard weeks
+	train, test = data[1:-328], data[-328:-6]
+	# restructure into windows of weekly data
+	train = array(split(train, len(train)/7))
+	test = array(split(test, len(test)/7))
+	return train, test
