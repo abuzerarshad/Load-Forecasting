@@ -4,6 +4,17 @@ from numpy import isnan
 from pandas import read_csv
 from pandas import to_numeric
 
+# univariate multi-step lstm
+from math import sqrt
+from numpy import split
+from numpy import array
+from sklearn.metrics import mean_squared_error
+from matplotlib import pyplot
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import Flatten
+from keras.layers import LSTM
+
 # load all data
 dataset = read_csv('swedenLoadData.csv', low_memory=False, infer_datetime_format=True, parse_dates={'datetime':[0,1]}, index_col=['datetime'])
 
@@ -66,3 +77,24 @@ def fill_missing(values):
 		for col in range(values.shape[1]):
 			if isnan(values[row, col]):
 				values[row, col] = values[row - one_day, col]
+
+# convert history into inputs and outputs
+def to_supervised(train, n_input, n_out=7):
+	# flatten data
+	data = train.reshape((train.shape[0]*train.shape[1], train.shape[2]))
+	X, y = list(), list()
+	in_start = 0
+	# step over the entire history one time step at a time
+	for _ in range(len(data)):
+		# define the end of the input sequence
+		in_end = in_start + n_input
+		out_end = in_end + n_out
+		# ensure we have enough data for this instance
+		if out_end <= len(data):
+			x_input = data[in_start:in_end, 0]
+			x_input = x_input.reshape((len(x_input), 1))
+			X.append(x_input)
+			y.append(data[in_end:out_end, 0])
+		# move along one time step
+		in_start += 1
+	return array(X), array(y)
