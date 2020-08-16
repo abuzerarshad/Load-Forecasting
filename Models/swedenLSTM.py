@@ -98,3 +98,38 @@ def to_supervised(train, n_input, n_out=7):
 		# move along one time step
 		in_start += 1
 	return array(X), array(y)
+
+# make a forecast
+def forecast(model, history, n_input):
+	# flatten data
+	data = array(history)
+	data = data.reshape((data.shape[0]*data.shape[1], data.shape[2]))
+	# retrieve last observations for input data
+	input_x = data[-n_input:, 0]
+	# reshape into [1, n_input, 1]
+	input_x = input_x.reshape((1, len(input_x), 1))
+	# forecast the next week
+	yhat = model.predict(input_x, verbose=0)
+	# we only want the vector forecast
+	yhat = yhat[0]
+	return yhat
+
+# evaluate a single model
+def evaluate_model(train, test, n_input):
+	# fit model
+	model = build_model(train, n_input)
+	# history is a list of weekly data
+	history = [x for x in train]
+	# walk-forward validation over each week
+	predictions = list()
+	for i in range(len(test)):
+		# predict the week
+		yhat_sequence = forecast(model, history, n_input)
+		# store the predictions
+		predictions.append(yhat_sequence)
+		# get real observation and add to history for predicting the next week
+		history.append(test[i, :])
+	# evaluate predictions days for each week
+	predictions = array(predictions)
+	score, scores = evaluate_forecasts(test[:, :, 0], predictions)
+	return score, scores
