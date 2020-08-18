@@ -277,3 +277,8 @@ summarize_scores('lstm', score, scores)
 days = ['sun', 'mon', 'tue', 'wed', 'thr', 'fri', 'sat']
 pyplot.plot(days, scores, marker='o', label='lstm')
 pyplot.show()
+
+# reshape into subsequences [samples, time steps, rows, cols, channels]
+train_x = train_x.reshape((train_x.shape[0], n_steps, 1, n_length, n_features))
+model.add(ConvLSTM2D(filters=64, kernel_size=(1,3), activation='relu', input_shape=(n_steps, 1, n_length, n_features)))
+model.add(Flatten())
