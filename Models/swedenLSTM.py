@@ -282,3 +282,28 @@ pyplot.show()
 train_x = train_x.reshape((train_x.shape[0], n_steps, 1, n_length, n_features))
 model.add(ConvLSTM2D(filters=64, kernel_size=(1,3), activation='relu', input_shape=(n_steps, 1, n_length, n_features)))
 model.add(Flatten())
+
+# evaluate a single model
+def evaluate_model(train, test, n_steps, n_length, n_input):
+	# fit model
+	model = build_model(train, n_steps, n_length, n_input)
+	# history is a list of weekly data
+	history = [x for x in train]
+	# walk-forward validation over each week
+	predictions = list()
+	for i in range(len(test)):
+		# predict the week
+		yhat_sequence = forecast(model, history, n_steps, n_length, n_input)
+		# store the predictions
+		predictions.append(yhat_sequence)
+		# get real observation and add to history for predicting the next week
+		history.append(test[i, :])
+	# evaluate predictions days for each week
+	predictions = array(predictions)
+	score, scores = evaluate_forecasts(test[:, :, 0], predictions)
+	return score, scores
+
+model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(n_timesteps,n_features)))
+model.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
+model.add(MaxPooling1D(pool_size=2))
+model.add(Flatten())
