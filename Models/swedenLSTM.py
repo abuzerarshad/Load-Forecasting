@@ -134,21 +134,6 @@ def evaluate_model(train, test, n_input):
 	score, scores = evaluate_forecasts(test[:, :, 0], predictions)
 	return score, scores
 
-# univariate multi-step encoder-decoder convlstm
-from math import sqrt
-from numpy import split
-from numpy import array
-from pandas import read_csv
-from sklearn.metrics import mean_squared_error
-from matplotlib import pyplot
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import Flatten
-from keras.layers import LSTM
-from keras.layers import RepeatVector
-from keras.layers import TimeDistributed
-from keras.layers import ConvLSTM2D
-
 # split a univariate dataset into train/test sets
 def split_dataset(data):
 	# split into standard weeks
@@ -241,26 +226,6 @@ def forecast(model, history, n_steps, n_length, n_input):
 	# we only want the vector forecast
 	yhat = yhat[0]
 	return yhat
-
-# evaluate a single model
-def evaluate_model(train, test, n_steps, n_length, n_input):
-	# fit model
-	model = build_model(train, n_steps, n_length, n_input)
-	# history is a list of weekly data
-	history = [x for x in train]
-	# walk-forward validation over each week
-	predictions = list()
-	for i in range(len(test)):
-		# predict the week
-		yhat_sequence = forecast(model, history, n_steps, n_length, n_input)
-		# store the predictions
-		predictions.append(yhat_sequence)
-		# get real observation and add to history for predicting the next week
-		history.append(test[i, :])
-	# evaluate predictions days for each week
-	predictions = array(predictions)
-	score, scores = evaluate_forecasts(test[:, :, 0], predictions)
-	return score, scores
 
 # load the new file
 dataset = read_csv('household_power_consumption_days.csv', header=0, infer_datetime_format=True, parse_dates=['datetime'], index_col=['datetime'])
