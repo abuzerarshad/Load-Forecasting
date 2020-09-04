@@ -272,3 +272,114 @@ model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(n_ti
 model.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
 model.add(MaxPooling1D(pool_size=2))
 model.add(Flatten())
+
+# load all data
+dataset = read_csv('household_power_consumption.txt', sep=';', header=0, low_memory=False, infer_datetime_format=True, parse_dates={'datetime':[0,1]}, index_col=['datetime'])
+
+# load all data
+dataset = read_csv('household_power_consumption.txt', sep=';', header=0, low_memory=False, infer_datetime_format=True, parse_dates={'datetime':[0,1]}, index_col=['datetime'])
+Next, we can mark all missing values indicated with a ‘?‘ character with a NaN value, which is a float.
+
+This will allow us to work with the data as one array of floating point values rather than mixed types (less efficient.)
+
+# mark all missing values
+dataset.replace('?', nan, inplace=True)
+# make dataset numeric
+dataset = dataset.astype('float32')
+# mark all missing values
+dataset.replace('?', nan, inplace=True)
+# make dataset numeric
+dataset = dataset.astype('float32')
+We also need to fill in the missing values now that they have been marked.
+
+A very simple approach would be to copy the observation from the same time the day before. We can implement this in a function named fill_missing() that will take the NumPy array of the data and copy values from exactly 24 hours ago.
+
+# fill missing values with a value at the same time one day ago
+def fill_missing(values):
+	one_day = 60 * 24
+	for row in range(values.shape[0]):
+		for col in range(values.shape[1]):
+			if isnan(values[row, col]):
+				values[row, col] = values[row - one_day, col]
+
+# fill missing values with a value at the same time one day ago
+def fill_missing(values):
+	one_day = 60 * 24
+	for row in range(values.shape[0]):
+		for col in range(values.shape[1]):
+			if isnan(values[row, col]):
+				values[row, col] = values[row - one_day, col]
+We can apply this function directly to the data within the DataFrame.
+
+# fill missing
+fill_missing(dataset.values)
+
+# fill missing
+fill_missing(dataset.values)
+Now we can create a new column that contains the remainder of the sub-metering, using the calculation from the previous section.
+
+# add a column for for the remainder of sub metering
+values = dataset.values
+dataset['sub_metering_4'] = (values[:,0] * 1000 / 60) - (values[:,4] + values[:,5] + values[:,6])
+# add a column for for the remainder of sub metering
+values = dataset.values
+dataset['sub_metering_4'] = (values[:,0] * 1000 / 60) - (values[:,4] + values[:,5] + values[:,6])
+We can now save the cleaned-up version of the dataset to a new file; in this case we will just change the file extension to .csv and save the dataset as ‘household_power_consumption.csv‘.
+
+# save updated dataset
+dataset.to_csv('household_power_consumption.csv')
+1
+2
+# save updated dataset
+dataset.to_csv('household_power_consumption.csv')
+Tying all of this together, the complete example of loading, cleaning-up, and saving the dataset is listed below.
+
+# load and clean-up data
+from numpy import nan
+from numpy import isnan
+from pandas import read_csv
+from pandas import to_numeric
+
+# fill missing values with a value at the same time one day ago
+def fill_missing(values):
+	one_day = 60 * 24
+	for row in range(values.shape[0]):
+		for col in range(values.shape[1]):
+			if isnan(values[row, col]):
+				values[row, col] = values[row - one_day, col]
+
+# load all data
+dataset = read_csv('household_power_consumption.txt', sep=';', header=0, low_memory=False, infer_datetime_format=True, parse_dates={'datetime':[0,1]}, index_col=['datetime'])
+# mark all missing values
+dataset.replace('?', nan, inplace=True)
+# make dataset numeric
+dataset = dataset.astype('float32')
+# fill missing
+fill_missing(dataset.values)
+# add a column for for the remainder of sub metering
+values = dataset.values
+dataset['sub_metering_4'] = (values[:,0] * 1000 / 60) - (values[:,4] + values[:,5] + values[:,6])
+# save updated dataset
+dataset.to_csv('household_power_consumption.csv')
+ 
+# fill missing values with a value at the same time one day ago
+def fill_missing(values):
+	one_day = 60 * 24
+	for row in range(values.shape[0]):
+		for col in range(values.shape[1]):
+			if isnan(values[row, col]):
+				values[row, col] = values[row - one_day, col]
+ 
+# load all data
+dataset = read_csv('household_power_consumption.txt', sep=';', header=0, low_memory=False, infer_datetime_format=True, parse_dates={'datetime':[0,1]}, index_col=['datetime'])
+# mark all missing values
+dataset.replace('?', nan, inplace=True)
+# make dataset numeric
+dataset = dataset.astype('float32')
+# fill missing
+fill_missing(dataset.values)
+# add a column for for the remainder of sub metering
+values = dataset.values
+dataset['sub_metering_4'] = (values[:,0] * 1000 / 60) - (values[:,4] + values[:,5] + values[:,6])
+# save updated dataset
+dataset.to_csv('household_power_consumption.csv')
